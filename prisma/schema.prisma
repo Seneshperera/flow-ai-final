@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  clerkId       String         @unique
+  email         String         @unique
+  firstName     String?
+  lastName      String?
+  imageUrl      String?
+  role          UserRole       @default(MEMBER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  organizations OrganizationMember[]
+  notifications Notification[]
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  logoUrl     String?
+  plan        PlanType @default(FREE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members       OrganizationMember[]
+  products      Product[]
+  inventories   Inventory[]
+  invoices      Invoice[]
+  analytics     Analytics[]
+}
+
+enum PlanType {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  role           OrgRole      @default(MEMBER)
+  userId         String
+  organizationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Product {
+  id             String       @id @default(uuid())
+  sku            String       @unique
+  name           String
+  description    String?
+  price          Float
+  currency       String       @default("USD")
+  imageUrl       String?
+  organizationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inventories  Inventory[]
+  invoiceItems InvoiceItem[]
+}
+
+model Inventory {
+  id             String       @id @default(uuid())
+  quantity       Int          @default(0)
+  lowStockAlert  Int          @default(10)
+  productId      String
+  organizationId String
+  location       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  invoiceNumber  String        @unique
+  status         InvoiceStatus @default(DRAFT)
+  totalAmount    Float
+  currency       String        @default("USD")
+  dueDate        DateTime?
+  organizationId String
+  customerId     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        InvoiceItem[]
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model InvoiceItem {
+  id        String   @id @default(uuid())
+  invoiceId String
+  productId String?
+  quantity  Int
+  unitPrice Float
+  total     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+}
+
+model Analytics {
+  id             String       @id @default(uuid())
+  organizationId String
+  metricName     String
+  metricValue    Float
+  date           DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  type      String   @default("INFO")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
