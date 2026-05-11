@@ -144,7 +144,7 @@ export default function AIAssistantPage() {
             
             <button 
               type="submit"
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || !(input || "").trim()}
               className="absolute right-2 p-3 rounded-xl bg-primary/20 text-primary hover:bg-primary/40 hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-primary/20"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}

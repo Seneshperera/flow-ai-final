@@ -3,25 +3,39 @@
 import { motion } from "framer-motion";
 import { TrendingUp, Users, DollarSign, Package, Bell, Search, Activity, Bot } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-const data = [
-  { name: "Mon", revenue: 4000, users: 2400 },
-  { name: "Tue", revenue: 3000, users: 1398 },
-  { name: "Wed", revenue: 2000, users: 9800 },
-  { name: "Thu", revenue: 2780, users: 3908 },
-  { name: "Fri", revenue: 1890, users: 4800 },
-  { name: "Sat", revenue: 2390, users: 3800 },
-  { name: "Sun", revenue: 3490, users: 4300 },
-];
-
-const stats = [
-  { label: "Total Revenue", value: "$45,231.89", change: "+20.1%", icon: DollarSign, color: "text-primary", bg: "bg-primary/20" },
-  { label: "Active Users", value: "2,350", change: "+180.1%", icon: Users, color: "text-secondary", bg: "bg-secondary/20" },
-  { label: "New Sales", value: "+12,234", change: "+19%", icon: TrendingUp, color: "text-accent", bg: "bg-accent/20" },
-  { label: "Low Stock", value: "12", change: "-2", icon: Package, color: "text-destructive", bg: "bg-destructive/20" },
-];
+import { useEffect, useState } from "react";
+import { getDashboardStats } from "@/actions/dashboard.actions";
 
 export default function DashboardPage() {
+  const [dbData, setDbData] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      const res = await getDashboardStats();
+      if (res.success) {
+        setDbData(res.data);
+      }
+    }
+    loadData();
+  }, []);
+
+  const data = dbData?.chartData || [
+    { name: "Mon", revenue: 0, users: 0 },
+    { name: "Tue", revenue: 0, users: 0 },
+    { name: "Wed", revenue: 0, users: 0 },
+    { name: "Thu", revenue: 0, users: 0 },
+    { name: "Fri", revenue: 0, users: 0 },
+    { name: "Sat", revenue: 0, users: 0 },
+    { name: "Sun", revenue: 0, users: 0 },
+  ];
+
+  const stats = [
+    { label: "Total Revenue", value: `$${(dbData?.revenue || 0).toLocaleString()}`, change: "+20.1%", icon: DollarSign, color: "text-primary", bg: "bg-primary/20" },
+    { label: "Active Users", value: dbData?.activeUsers || "0", change: "+180.1%", icon: Users, color: "text-secondary", bg: "bg-secondary/20" },
+    { label: "Total Products", value: dbData?.totalProducts || "0", change: "+19%", icon: Package, color: "text-accent", bg: "bg-accent/20" },
+    { label: "Low Stock", value: dbData?.lowStockCount || "0", change: "-2", icon: TrendingUp, color: "text-destructive", bg: "bg-destructive/20" },
+  ];
+
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}

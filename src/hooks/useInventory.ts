@@ -2,48 +2,34 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useInventoryStore, Product } from "@/store/useInventoryStore";
-
-// Simulate network delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { getInventoryAction, addProductAction, updateProductAction, deleteProductAction } from "@/actions/inventory.actions";
 
 export function useInventory() {
   const queryClient = useQueryClient();
   const store = useInventoryStore();
 
-  // Fetch logic (simulated)
+  // Fetch logic from DB
   const { data: serverProducts, isLoading } = useQuery({
     queryKey: ['inventory'],
     queryFn: async () => {
-      await delay(800); // Simulate network
-      return store.products;
+      const res = await getInventoryAction();
+      if (!res.success) throw new Error(res.error);
+      
+      // Update Zustand store so UI can search/filter immediately
+      useInventoryStore.setState({ products: res.data || [] });
+      
+      return res.data;
     },
-    initialData: store.products,
   });
 
   // Add Product Mutation
   const addProductMutation = useMutation({
     mutationFn: async (newProduct: Omit<Product, "id">) => {
-      await delay(1000); // Simulate API call
-      return { ...newProduct, id: Math.random().toString(36).substr(2, 9) } as Product;
+      const res = await addProductAction(newProduct);
+      if (!res.success) throw new Error(res.error);
+      return res.data as Product;
     },
-    onMutate: async (newProduct) => {
-      await queryClient.cancelQueries({ queryKey: ['inventory'] });
-      const previousProducts = queryClient.getQueryData<Product[]>(['inventory']);
-      
-      // Optimistic update
-      const optimisticProduct = { ...newProduct, id: 'temp-id' } as Product;
-      queryClient.setQueryData<Product[]>(['inventory'], (old) => [optimisticProduct, ...(old || [])]);
-      
-      // Update Zustand store for immediate UI reflection
-      store.addProduct(newProduct);
-
-      return { previousProducts };
-    },
-    onError: (err, newProduct, context) => {
-      queryClient.setQueryData(['inventory'], context?.previousProducts);
-      // Rollback Zustand logic here if needed
-    },
-    onSettled: () => {
+    onSuccess: (addedProduct) => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
   });
@@ -51,21 +37,11 @@ export function useInventory() {
   // Edit Product Mutation
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: Partial<Product> }) => {
-      await delay(1000);
+      const res = await updateProductAction(id, data);
+      if (!res.success) throw new Error(res.error);
       return { id, data };
     },
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ['inventory'] });
-      const previousProducts = queryClient.getQueryData<Product[]>(['inventory']);
-
-      queryClient.setQueryData<Product[]>(['inventory'], (old) => 
-        old?.map(p => p.id === id ? { ...p, ...data } : p)
-      );
-
-      store.updateProduct(id, data);
-      return { previousProducts };
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
   });
@@ -73,21 +49,11 @@ export function useInventory() {
   // Delete Product Mutation
   const deleteProductMutation = useMutation({
     mutationFn: async (id: string) => {
-      await delay(1000);
+      const res = await deleteProductAction(id);
+      if (!res.success) throw new Error(res.error);
       return id;
     },
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['inventory'] });
-      const previousProducts = queryClient.getQueryData<Product[]>(['inventory']);
-
-      queryClient.setQueryData<Product[]>(['inventory'], (old) => 
-        old?.filter(p => p.id !== id)
-      );
-
-      store.deleteProduct(id);
-      return { previousProducts };
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
   });

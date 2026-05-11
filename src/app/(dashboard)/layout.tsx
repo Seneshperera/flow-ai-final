@@ -1,11 +1,37 @@
 import Sidebar from "@/components/Sidebar";
 import ModalProvider from "@/components/ModalProvider";
+import { currentUser } from "@clerk/nextjs/server";
+import prisma from "@/lib/prisma";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const clerkUser = await currentUser();
+  if (clerkUser) {
+    try {
+      await prisma.user.upsert({
+        where: { clerkId: clerkUser.id },
+        update: {
+          email: clerkUser.emailAddresses[0]?.emailAddress || "",
+          firstName: clerkUser.firstName,
+          lastName: clerkUser.lastName,
+          imageUrl: clerkUser.imageUrl,
+        },
+        create: {
+          clerkId: clerkUser.id,
+          email: clerkUser.emailAddresses[0]?.emailAddress || "",
+          firstName: clerkUser.firstName,
+          lastName: clerkUser.lastName,
+          imageUrl: clerkUser.imageUrl,
+        }
+      });
+    } catch (e) {
+      console.error("Failed to sync user to neon db", e);
+    }
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <ModalProvider />

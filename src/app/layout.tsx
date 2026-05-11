@@ -30,30 +30,34 @@ export default function RootLayout({
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: "oklch(0.7 0.15 200)", // Match neon cyan
-          colorBackground: "rgba(10,10,10,0.8)",
-          colorInputBackground: "rgba(255,255,255,0.05)",
-          colorInputText: "#fff",
+          colorPrimary: "#00e5ff", // Neon cyan
+          colorBackground: "#09090b", // Deep dark zinc
+          colorInputBackground: "#18181b", 
+          colorInputText: "#ffffff", 
+          colorText: "#ffffff", 
+          colorTextSecondary: "#a1a1aa", 
+          borderRadius: "1rem",
         },
         elements: {
-          card: "glass-panel border border-white/10 shadow-[0_0_40px_rgba(0,255,255,0.05)]",
-          headerTitle: "text-white glow-text",
-          headerSubtitle: "text-muted-foreground",
-          socialButtonsBlockButton: "glass-panel border-white/10 text-white hover:bg-white/5",
-          formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary/90 glow-border",
-          formFieldInput: "bg-white/5 border-white/10 text-white focus:border-primary/50 transition-colors rounded-xl",
-          formFieldLabel: "text-muted-foreground font-medium",
-          dividerLine: "bg-white/10",
-          dividerText: "text-muted-foreground",
-          footerActionLink: "text-primary hover:underline",
+          card: "border border-white/10 shadow-[0_0_40px_rgba(0,229,255,0.1)] bg-black/80 backdrop-blur-2xl p-8",
+          headerTitle: "text-2xl font-bold text-white tracking-tight",
+          headerSubtitle: "text-zinc-400",
+          formButtonPrimary: "bg-[#00e5ff] text-black hover:bg-[#33ebff] font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all",
+          formFieldInput: "bg-zinc-900 border-zinc-800 text-white focus:border-[#00e5ff] transition-colors rounded-xl",
+          formFieldLabel: "text-zinc-300 font-medium",
+          footerActionLink: "text-[#00e5ff] hover:text-[#33ebff] hover:underline transition-colors",
         }
       }}
     >
       <html
         lang="en"
+        suppressHydrationWarning
         className={`dark ${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <body className="min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary/30">
+        <body 
+          suppressHydrationWarning 
+          className="min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary/30"
+        >
           <QueryProvider>
             {/* Background ambient glow */}
             <div className="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background"></div>

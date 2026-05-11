@@ -39,13 +39,15 @@ export default function Navbar() {
           <Link href="/login" className="text-sm font-medium text-white hover:text-primary transition-colors">
             Sign In
           </Link>
-          <button className="relative group px-6 py-2 rounded-full bg-primary/10 border border-primary/50 text-primary font-medium overflow-hidden transition-all hover:bg-primary/20 hover:scale-105 active:scale-95">
-            <span className="relative z-10 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Get Started
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-          </button>
+          <Link href="/register">
+            <button className="relative group px-6 py-2 rounded-full bg-primary/10 border border-primary/50 text-primary font-medium overflow-hidden transition-all hover:bg-primary/20 hover:scale-105 active:scale-95">
+              <span className="relative z-10 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                Get Started
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            </button>
+          </Link>
         </div>
 
         {/* Mobile menu button */}
@@ -69,10 +71,12 @@ export default function Navbar() {
           <Link href="#pricing" className="text-white hover:text-primary p-2">Pricing</Link>
           <Link href="/dashboard" className="text-white hover:text-primary p-2">Dashboard</Link>
           <Link href="/login" className="text-white hover:text-primary p-2">Sign In</Link>
-          <button className="w-full py-3 rounded-xl bg-primary/20 border border-primary/50 text-primary font-medium flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            Get Started
-          </button>
+          <Link href="/register" className="w-full">
+            <button className="w-full py-3 rounded-xl bg-primary/20 border border-primary/50 text-primary font-medium flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Get Started
+            </button>
+          </Link>
         </motion.div>
       )}
     </motion.nav>

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Activity, Zap, Shield } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -34,9 +35,9 @@ export default function Hero() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
-            <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 glow-border">
+            <Link href="/register" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 glow-border">
               Start Free Trial <ArrowRight className="w-4 h-4" />
-            </button>
+            </Link>
             <button className="w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-medium hover:bg-white/5 transition-all">
               Book Demo
             </button>

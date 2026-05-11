@@ -27,7 +27,7 @@ export default function RegisterPage() {
 
         {/* Clerk SignUp Component with Custom Theming passed from layout */}
         <div className="w-full flex justify-center">
-          <SignUp path="/register" routing="path" signInUrl="/login" forceRedirectUrl="/onboarding" />
+          <SignUp path="/register" routing="path" signInUrl="/login" fallbackRedirectUrl="/onboarding" />
         </div>
       </motion.div>
     </div>

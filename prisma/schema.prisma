@@ -45,6 +45,7 @@ model Organization {
   inventories   Inventory[]
   invoices      Invoice[]
   analytics     Analytics[]
+  automations   Automation[]
 }
 
 enum PlanType {
@@ -78,6 +79,9 @@ model Product {
   sku            String       @unique
   name           String
   description    String?
+  category       String       @default("General")
+  supplier       String?
+  trend          String       @default("up")
   price          Float
   currency       String       @default("USD")
   imageUrl       String?
@@ -165,4 +169,33 @@ model Notification {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Automation {
+  id             String            @id @default(uuid())
+  name           String
+  description    String?
+  triggerType    AutomationTrigger
+  triggerConfig  Json?             // Stores config for the trigger (e.g. { productId: "p1", threshold: 10 })
+  actionType     AutomationAction
+  actionConfig   Json?             // Stores config for the action (e.g. { phone: "+123", message: "Hello" })
+  isActive       Boolean           @default(true)
+  organizationId String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+enum AutomationTrigger {
+  LOW_STOCK
+  NEW_ORDER
+  INVOICE_PAID
+  CUSTOM_WEBHOOK
+}
+
+enum AutomationAction {
+  SEND_WHATSAPP
+  SEND_EMAIL
+  CREATE_NOTIFICATION
 }
