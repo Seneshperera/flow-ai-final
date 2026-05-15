@@ -3,5 +3,9 @@ legacy-web
 cloud-backend
 pos-app-legacy
 ml_service
+scratch
+check_db.ts
+check_db2.ts
+check_prisma.ts
 .venv
 node_modules

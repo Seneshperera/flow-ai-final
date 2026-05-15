@@ -36,6 +36,9 @@
     "legacy-web/**",
     "cloud-backend/**",
     "pos-app-legacy/**",
+    "scratch/**",
+    "*.ts",
+    "!next-env.d.ts",
     ".next",
     "out"
   ]
