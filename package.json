@@ -16,7 +16,6 @@
     "@clerk/themes": "^2.4.57",
     "@prisma/client": "^5.22.0",
     "@tanstack/react-query": "^5.100.9",
-    "@types/bcryptjs": "^3.0.0",
     "ai": "^6.0.177",
     "axios": "^1.16.0",
     "bcryptjs": "^3.0.3",
