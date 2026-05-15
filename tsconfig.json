@@ -30,5 +30,13 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "pos-app", "legacy-web", "cloud-backend", "pos-app-legacy"]
+  "exclude": [
+    "node_modules",
+    "pos-app/**",
+    "legacy-web/**",
+    "cloud-backend/**",
+    "pos-app-legacy/**",
+    ".next",
+    "out"
+  ]
 }

@@ -1,0 +1,7 @@
+pos-app
+legacy-web
+cloud-backend
+pos-app-legacy
+ml_service
+.venv
+node_modules
