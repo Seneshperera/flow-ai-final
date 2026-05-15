@@ -1,12 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles, Terminal, Activity, Menu, X } from "lucide-react";
+import { Sparkles, Terminal, Activity, Menu, X, Sun, Moon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  // Fix hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <motion.nav 
@@ -21,7 +29,7 @@ export default function Navbar() {
             <Activity className="text-primary w-5 h-5 absolute z-10" />
             <div className="absolute inset-0 bg-primary/20 blur-md animate-pulse"></div>
           </div>
-          <span className="text-xl font-bold tracking-tighter text-white">
+          <span className="text-xl font-bold tracking-tighter text-foreground">
             Flow<span className="text-primary glow-text">Pilot</span> AI
           </span>
         </div>
@@ -36,7 +44,13 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-white hover:text-primary transition-colors">
+          <button 
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-xl bg-secondary/50 border border-border hover:bg-secondary transition-colors mr-2"
+          >
+            {mounted && (theme === 'dark' ? <Sun className="w-4 h-4 text-primary" /> : <Moon className="w-4 h-4 text-primary" />)}
+          </button>
+          <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
             Sign In
           </Link>
           <Link href="/register">
@@ -52,7 +66,7 @@ export default function Navbar() {
 
         {/* Mobile menu button */}
         <button 
-          className="md:hidden p-2 text-white/70 hover:text-white"
+          className="md:hidden p-2 text-foreground/70 hover:text-foreground"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X /> : <Menu />}
@@ -66,11 +80,11 @@ export default function Navbar() {
           animate={{ opacity: 1, y: 0 }}
           className="md:hidden glass-panel mt-4 p-4 flex flex-col gap-4 absolute left-6 right-6"
         >
-          <Link href="#features" className="text-white hover:text-primary p-2">Features</Link>
-          <Link href="#solutions" className="text-white hover:text-primary p-2">Solutions</Link>
-          <Link href="#pricing" className="text-white hover:text-primary p-2">Pricing</Link>
-          <Link href="/dashboard" className="text-white hover:text-primary p-2">Dashboard</Link>
-          <Link href="/login" className="text-white hover:text-primary p-2">Sign In</Link>
+          <Link href="#features" className="text-foreground hover:text-primary p-2">Features</Link>
+          <Link href="#solutions" className="text-foreground hover:text-primary p-2">Solutions</Link>
+          <Link href="#pricing" className="text-foreground hover:text-primary p-2">Pricing</Link>
+          <Link href="/dashboard" className="text-foreground hover:text-primary p-2">Dashboard</Link>
+          <Link href="/login" className="text-foreground hover:text-primary p-2">Sign In</Link>
           <Link href="/register" className="w-full">
             <button className="w-full py-3 rounded-xl bg-primary/20 border border-primary/50 text-primary font-medium flex items-center justify-center gap-2">
               <Sparkles className="w-4 h-4" />

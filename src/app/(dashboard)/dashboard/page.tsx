@@ -31,9 +31,9 @@ export default function DashboardPage() {
 
   const stats = [
     { label: "Total Revenue", value: `$${(dbData?.revenue || 0).toLocaleString()}`, change: "+20.1%", icon: DollarSign, color: "text-primary", bg: "bg-primary/20" },
-    { label: "Active Users", value: dbData?.activeUsers || "0", change: "+180.1%", icon: Users, color: "text-secondary", bg: "bg-secondary/20" },
+    { label: "Net Profit", value: `$${(dbData?.profit || 0).toLocaleString()}`, change: "+12.5%", icon: TrendingUp, color: "text-secondary", bg: "bg-secondary/20" },
     { label: "Total Products", value: dbData?.totalProducts || "0", change: "+19%", icon: Package, color: "text-accent", bg: "bg-accent/20" },
-    { label: "Low Stock", value: dbData?.lowStockCount || "0", change: "-2", icon: TrendingUp, color: "text-destructive", bg: "bg-destructive/20" },
+    { label: "Low Stock", value: dbData?.lowStockCount || "0", change: "-2", icon: Bell, color: "text-destructive", bg: "bg-destructive/20" },
   ];
 
   return (
@@ -41,19 +41,19 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground mt-1">Welcome back, system operations running smoothly.</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="relative glass-panel rounded-full px-4 py-2 flex items-center gap-2 border-white/5 w-64">
+          <div className="relative bg-card rounded-full px-4 py-2 flex items-center gap-2 border border-border w-64">
             <Search className="w-4 h-4 text-muted-foreground" />
             <input 
               type="text" 
               placeholder="Search anything..." 
-              className="bg-transparent border-none outline-none text-sm text-white placeholder:text-muted-foreground w-full"
+              className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground w-full"
             />
           </div>
-          <button className="glass-panel p-2.5 rounded-full border-white/5 relative hover:bg-white/5 transition-colors">
+          <button className="bg-card p-2.5 rounded-full border border-border relative hover:bg-accent transition-colors">
             <Bell className="w-5 h-5 text-muted-foreground" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_rgba(0,255,255,1)]"></span>
           </button>
@@ -72,15 +72,15 @@ export default function DashboardPage() {
           >
             <div className={`absolute -right-6 -top-6 w-24 h-24 ${stat.bg} rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`}></div>
             <div className="relative z-10 flex items-center justify-between mb-4">
-              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} border border-white/5`}>
+              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} border border-border`}>
                 <stat.icon className="w-5 h-5" />
               </div>
-              <div className={`text-sm font-medium ${stat.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-sm font-medium ${stat.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
                 {stat.change}
               </div>
             </div>
             <div className="relative z-10">
-              <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+              <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
             </div>
           </motion.div>
@@ -97,10 +97,10 @@ export default function DashboardPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-white">Revenue Overview</h2>
-              <p className="text-sm text-muted-foreground">AI predicted growth trajectory</p>
+              <h2 className="text-xl font-bold text-foreground">Revenue Overview</h2>
+              <p className="text-sm text-muted-foreground">Real-time revenue tracking</p>
             </div>
-            <select className="glass-panel bg-black/20 text-sm px-3 py-1.5 rounded-lg border-white/10 text-white outline-none">
+            <select className="bg-card text-sm px-3 py-1.5 rounded-lg border border-border text-foreground outline-none">
               <option>Last 7 days</option>
               <option>Last 30 days</option>
               <option>This Year</option>
@@ -141,33 +141,33 @@ export default function DashboardPage() {
             <div className="p-2 rounded-lg bg-secondary/20 border border-secondary/50">
               <Bot className="w-5 h-5 text-secondary" />
             </div>
-            <h2 className="text-lg font-bold text-white">AI Insights</h2>
+            <h2 className="text-lg font-bold text-foreground">AI Insights</h2>
           </div>
 
           <div className="flex flex-col gap-4 relative z-10">
-            <div className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-secondary/30 transition-colors cursor-pointer group">
+            <div className="p-4 rounded-xl bg-secondary/10 border border-border hover:border-secondary/30 transition-colors cursor-pointer group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-secondary">Inventory Alert</span>
                 <span className="text-xs text-muted-foreground">Just now</span>
               </div>
-              <p className="text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors">
-                SKU-992 (Quantum CPU) is depleting 40% faster than usual. Reorder recommended in next 48h to prevent stockout.
+              <p className="text-sm text-foreground/80 leading-relaxed group-hover:text-foreground transition-colors">
+                Stock levels are updating based on real-time POS transactions and purchase history.
               </p>
-              <button className="mt-3 text-xs font-medium text-secondary hover:text-white transition-colors flex items-center gap-1">
-                Auto-order now <Activity className="w-3 h-3" />
+              <button className="mt-3 text-xs font-medium text-secondary hover:text-primary transition-colors flex items-center gap-1">
+                View Inventory <Activity className="w-3 h-3" />
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-primary/30 transition-colors cursor-pointer group">
+            <div className="p-4 rounded-xl bg-secondary/10 border border-border hover:border-primary/30 transition-colors cursor-pointer group">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-primary">Revenue Opportunity</span>
-                <span className="text-xs text-muted-foreground">2 hrs ago</span>
+                <span className="text-sm font-medium text-primary">Sales Opportunity</span>
+                <span className="text-xs text-muted-foreground">Recent</span>
               </div>
-              <p className="text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors">
-                Based on current traffic patterns, launching the weekend promo campaign today could yield +15% conversion lift.
+              <p className="text-sm text-foreground/80 leading-relaxed group-hover:text-foreground transition-colors">
+                Your revenue has been summarized for the last 30 days. Check the POS history for details.
               </p>
-              <button className="mt-3 text-xs font-medium text-primary hover:text-white transition-colors flex items-center gap-1">
-                Launch Campaign <Activity className="w-3 h-3" />
+              <button className="mt-3 text-xs font-medium text-primary hover:text-secondary transition-colors flex items-center gap-1">
+                Open POS <Activity className="w-3 h-3" />
               </button>
             </div>
           </div>

@@ -8,6 +8,7 @@ export interface Product {
   stock: number;
   status: "In Stock" | "Low Stock" | "Out of Stock";
   price: number;
+  cost?: number;
   supplier: string;
   trend: "up" | "down";
 }

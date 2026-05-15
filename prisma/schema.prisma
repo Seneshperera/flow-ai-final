@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma_v2"
 }
 
 datasource db {
@@ -12,8 +13,9 @@ datasource db {
 
 model User {
   id            String         @id @default(uuid())
-  clerkId       String         @unique
+  clerkId       String?        @unique
   email         String         @unique
+  password      String?
   firstName     String?
   lastName      String?
   imageUrl      String?
@@ -46,6 +48,12 @@ model Organization {
   invoices      Invoice[]
   analytics     Analytics[]
   automations   Automation[]
+  sales         Sale[]
+  customers     Customer[]
+  expenses      Expense[]
+  suppliers     Supplier[]
+  brands        Brand[]
+  purchaseOrders PurchaseOrder[]
 }
 
 enum PlanType {
@@ -74,24 +82,58 @@ enum OrgRole {
   MEMBER
 }
 
+model Supplier {
+  id             String   @id @default(uuid())
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products       Product[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model Brand {
+  id             String   @id @default(uuid())
+  name           String
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     Product[]
+}
+
 model Product {
   id             String       @id @default(uuid())
   sku            String       @unique
   name           String
   description    String?
   category       String       @default("General")
-  supplier       String?
+  brandId        String?
+  unit           String       @default("pcs")
+  supplierId     String?
   trend          String       @default("up")
   price          Float
+  cost           Float?       @default(0)
   currency       String       @default("USD")
   imageUrl       String?
   organizationId String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brand        Brand?        @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  supplier     Supplier?     @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   inventories  Inventory[]
   invoiceItems InvoiceItem[]
+  saleItems    SaleItem[]
+  purchaseItems PurchaseOrderItem[]
 }
 
 model Inventory {
@@ -106,6 +148,42 @@ model Inventory {
 
   product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model PurchaseOrder {
+  id             String         @id @default(uuid())
+  orderNumber    String         @unique
+  status         PurchaseStatus @default(PENDING)
+  totalAmount    Float
+  supplierId     String
+  organizationId String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplier     Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  items        PurchaseOrderItem[]
+}
+
+enum PurchaseStatus {
+  PENDING
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrderItem {
+  id              String   @id @default(uuid())
+  purchaseOrderId String
+  productId       String
+  quantity        Int
+  unitCost        Float
+  total           Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Invoice {
@@ -185,6 +263,102 @@ model Automation {
   updatedAt      DateTime          @updatedAt
 
   organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Sale {
+  id             String      @id @default(uuid())
+  saleNumber     String      @unique @default(cuid())
+  totalAmount    Float
+  tax            Float       @default(0)
+  discount       Float       @default(0)
+  profit         Float       @default(0)
+  paymentMethod  String?
+  organizationId String
+  customerId     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer       Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items          SaleItem[]
+  delivery       Delivery?
+}
+
+model SaleItem {
+  id        String   @id @default(uuid())
+  saleId    String
+  productId String?
+  quantity  Int
+  price     Float
+  cost      Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+}
+
+model Delivery {
+  id                String         @id @default(uuid())
+  saleId            String         @unique
+  status            DeliveryStatus @default(PENDING)
+  personnelName     String?
+  personnelPhone    String?
+  deliveryAddress   String?
+  estimatedArrival  DateTime?
+  deliveredAt       DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+}
+
+enum DeliveryStatus {
+  PENDING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model Customer {
+  id             String   @id @default(uuid())
+  name           String
+  phone          String?
+  email          String?
+  address        String?
+  balance        Float    @default(0)
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sales          Sale[]
+  payments       DuePayment[]
+}
+
+model DuePayment {
+  id             String   @id @default(uuid())
+  amount         Float
+  customerId     String
+  paymentMethod  String
+  note           String?
+  createdAt      DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id             String   @id @default(uuid())
+  category       String
+  amount         Float
+  description    String?
+  date           DateTime @default(now())
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 enum AutomationTrigger {

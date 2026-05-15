@@ -1,40 +1,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
 import { Product as UIProduct } from "@/store/useInventoryStore";
+import { getActiveOrgId } from "@/lib/org-context";
+import { revalidatePath } from "next/cache";
 
 async function getOrgId() {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-    include: {
-      organizations: {
-        include: { organization: true }
-      }
-    }
-  });
-
-  if (!dbUser || dbUser.organizations.length === 0) {
-    // If they have no org, let's create a default one for them
-    const org = await prisma.organization.create({
-      data: {
-        name: "My Organization",
-        slug: `org-${user.id}`,
-        members: {
-          create: {
-            userId: dbUser?.id || "",
-            role: "OWNER"
-          }
-        }
-      }
-    });
-    return org.id;
-  }
-
-  return dbUser.organizations[0].organizationId;
+  return await getActiveOrgId();
 }
 
 export async function getInventoryAction() {
@@ -44,7 +16,9 @@ export async function getInventoryAction() {
     const dbProducts = await prisma.product.findMany({
       where: { organizationId: orgId },
       include: {
-        inventories: true
+        inventories: true,
+        supplier: true,
+        brand: true
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -63,7 +37,8 @@ export async function getInventoryAction() {
         stock: stock,
         status: status,
         price: p.price,
-        supplier: p.supplier || "Unknown",
+        cost: p.cost,
+        supplier: p.supplier?.name || "Unknown",
         trend: (p.trend as "up" | "down") || "up"
       };
     });
@@ -78,24 +53,41 @@ export async function addProductAction(product: Omit<UIProduct, "id">) {
   try {
     const orgId = await getOrgId();
 
-    const created = await prisma.product.create({
-      data: {
-        sku: product.sku,
-        name: product.name,
-        price: product.price,
-        category: product.category,
-        supplier: product.supplier,
-        trend: product.trend,
-        organizationId: orgId,
-        inventories: {
-          create: {
-            quantity: product.stock,
-            organizationId: orgId
+    // Find or create supplier if provided
+    let supplierId: string | undefined;
+    if (product.supplier) {
+      const supplier = await prisma.supplier.findFirst({
+        where: { name: product.supplier, organizationId: orgId }
+      }) || await prisma.supplier.create({
+        data: { name: product.supplier, organizationId: orgId }
+      });
+      supplierId = supplier.id;
+    }
+
+    const created = await prisma.$transaction(async (tx) => {
+      return await tx.product.create({
+        data: {
+          sku: product.sku,
+          name: product.name,
+          price: product.price,
+          cost: product.cost,
+          category: product.category,
+          supplierId: supplierId,
+          trend: product.trend,
+          organizationId: orgId,
+          inventories: {
+            create: {
+              quantity: product.stock,
+              organizationId: orgId
+            }
           }
-        }
-      },
-      include: { inventories: true }
+        },
+        include: { inventories: true }
+      });
     });
+
+    revalidatePath("/inventory");
+    revalidatePath("/pos");
 
     const stock = created.inventories[0]?.quantity || 0;
     return { 
@@ -113,14 +105,23 @@ export async function addProductAction(product: Omit<UIProduct, "id">) {
 
 export async function updateProductAction(id: string, data: Partial<UIProduct>) {
   try {
-    // Determine what to update
+    const orgId = await getOrgId();
     const productUpdate: any = {};
     if (data.name) productUpdate.name = data.name;
     if (data.sku) productUpdate.sku = data.sku;
     if (data.price) productUpdate.price = data.price;
+    if (data.cost) productUpdate.cost = data.cost;
     if (data.category) productUpdate.category = data.category;
-    if (data.supplier) productUpdate.supplier = data.supplier;
     if (data.trend) productUpdate.trend = data.trend;
+
+    if (data.supplier) {
+      const supplier = await prisma.supplier.findFirst({
+        where: { name: data.supplier, organizationId: orgId }
+      }) || await prisma.supplier.create({
+        data: { name: data.supplier, organizationId: orgId }
+      });
+      productUpdate.supplierId = supplier.id;
+    }
 
     const updated = await prisma.product.update({
       where: { id },

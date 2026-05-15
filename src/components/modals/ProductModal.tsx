@@ -28,6 +28,7 @@ export default function ProductModal() {
         sku: data.product.sku,
         category: data.product.category,
         price: data.product.price.toString(),
+        cost: (data.product.cost || 0).toString(),
         stock: data.product.stock.toString(),
         supplier: data.product.supplier,
       });
@@ -43,6 +44,7 @@ export default function ProductModal() {
       sku: formData.sku,
       category: formData.category,
       price: parseFloat(formData.price) || 0,
+      cost: parseFloat((formData as any).cost) || 0,
       stock: stockNum,
       supplier: formData.supplier,
       status: (stockNum === 0 ? "Out of Stock" : stockNum < 20 ? "Low Stock" : "In Stock") as "Low Stock" | "Out of Stock" | "In Stock",
@@ -116,7 +118,7 @@ export default function ProductModal() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-muted-foreground pl-1">Price</label>
+            <label className="text-xs font-medium text-muted-foreground pl-1">Selling Price</label>
             <div className="relative flex items-center">
               <DollarSign className="absolute left-3 w-4 h-4 text-muted-foreground" />
               <input 
@@ -131,6 +133,24 @@ export default function ProductModal() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
+            <label className="text-xs font-medium text-muted-foreground pl-1">Cost Price</label>
+            <div className="relative flex items-center">
+              <DollarSign className="absolute left-3 w-4 h-4 text-muted-foreground" />
+              <input 
+                required
+                type="number" 
+                step="0.01"
+                value={(formData as any).cost || ""}
+                onChange={(e) => setFormData({...formData, cost: e.target.value} as any)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white outline-none focus:border-primary/50 transition-all" 
+                placeholder="0.00" 
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-muted-foreground pl-1">Initial Stock</label>
             <div className="relative flex items-center">
               <Box className="absolute left-3 w-4 h-4 text-muted-foreground" />
@@ -144,17 +164,16 @@ export default function ProductModal() {
               />
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-muted-foreground pl-1">Supplier</label>
-          <input 
-            type="text" 
-            value={formData.supplier}
-            onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary/50 focus:shadow-[0_0_15px_rgba(0,255,255,0.1)] transition-all" 
-            placeholder="Supplier name" 
-          />
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-medium text-muted-foreground pl-1">Supplier</label>
+            <input 
+              type="text" 
+              value={formData.supplier}
+              onChange={(e) => setFormData({...formData, supplier: e.target.value})}
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-primary/50 transition-all" 
+              placeholder="Supplier name" 
+            />
+          </div>
         </div>
 
         <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-white/10">

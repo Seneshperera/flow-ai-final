@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import { Toaster } from "sonner";
+
 export const metadata: Metadata = {
   title: "FlowPilot AI - The AI Business Operating System",
   description: "A futuristic AI-powered business operating system for modern enterprises.",
@@ -28,41 +31,31 @@ export default function RootLayout({
   return (
     <ClerkProvider
       appearance={{
-        baseTheme: dark,
+        baseTheme: undefined, // Let theme provider handle it or use dynamic logic
         variables: {
-          colorPrimary: "#00e5ff", // Neon cyan
-          colorBackground: "#09090b", // Deep dark zinc
-          colorInputBackground: "#18181b", 
-          colorInputText: "#ffffff", 
-          colorText: "#ffffff", 
-          colorTextSecondary: "#a1a1aa", 
+          colorPrimary: "#00e5ff",
           borderRadius: "1rem",
         },
-        elements: {
-          card: "border border-white/10 shadow-[0_0_40px_rgba(0,229,255,0.1)] bg-black/80 backdrop-blur-2xl p-8",
-          headerTitle: "text-2xl font-bold text-white tracking-tight",
-          headerSubtitle: "text-zinc-400",
-          formButtonPrimary: "bg-[#00e5ff] text-black hover:bg-[#33ebff] font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all",
-          formFieldInput: "bg-zinc-900 border-zinc-800 text-white focus:border-[#00e5ff] transition-colors rounded-xl",
-          formFieldLabel: "text-zinc-300 font-medium",
-          footerActionLink: "text-[#00e5ff] hover:text-[#33ebff] hover:underline transition-colors",
-        }
       }}
     >
       <html
         lang="en"
         suppressHydrationWarning
-        className={`dark ${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <body 
-          suppressHydrationWarning 
-          className="min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary/30"
+          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
         >
-          <QueryProvider>
-            {/* Background ambient glow */}
-            <div className="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background"></div>
-            {children}
-          </QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <QueryProvider>
+              {children}
+            </QueryProvider>
+            <Toaster position="top-right" richColors theme="dark" />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -1,63 +1,87 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
+import { getActiveOrgId } from "@/lib/org-context";
+import { startOfDay, subDays } from "date-fns";
 
 export async function getDashboardStats() {
   try {
-    const user = await currentUser();
-    if (!user) throw new Error("Unauthorized");
+    const orgId = await getActiveOrgId();
 
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-      include: {
-        organizationMembers: {
-          include: { organization: true }
-        }
+    // 1. Total Products
+    const totalProducts = await prisma.product.count({
+      where: { organizationId: orgId }
+    });
+
+    // 2. Low Stock Count
+    const lowStockCount = await prisma.inventory.count({
+      where: {
+        organizationId: orgId,
+        quantity: { lte: 10 } // Using 10 as default threshold
       }
     });
 
-    if (!dbUser) throw new Error("User not found in DB");
+    // 3. Total Revenue & Profit (Last 30 days)
+    const thirtyDaysAgo = subDays(new Date(), 30);
+    const sales = await prisma.sale.findMany({
+      where: {
+        organizationId: orgId,
+        createdAt: { gte: thirtyDaysAgo }
+      }
+    });
+    const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+    const totalProfit = sales.reduce((sum, sale) => sum + sale.profit, 0);
 
-    // Fetch real data (e.g., inventory count, low stock, etc.)
-    // For now we'll do basic counts. If there's no organization, we'll return zeroes.
-    const orgId = dbUser.organizationMembers[0]?.organizationId;
+    // 4. Expenses
+    const expenses = await prisma.expense.findMany({
+      where: {
+        organizationId: orgId,
+        date: { gte: thirtyDaysAgo }
+      }
+    });
+    const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-    let totalProducts = 0;
-    let lowStockCount = 0;
+    // 5. Net Profit
+    const netProfit = totalProfit - totalExpenses;
 
-    if (orgId) {
-      totalProducts = await prisma.product.count({
-        where: { inventory: { organizationId: orgId } }
-      });
+    // 6. Active Users (Org Members)
+    const activeUsers = await prisma.organizationMember.count({
+      where: { organizationId: orgId }
+    });
 
-      lowStockCount = await prisma.product.count({
-        where: {
-          inventory: { organizationId: orgId },
-          quantity: { lte: 10 } // Example threshold
-        }
+    // 7. Chart Data (Last 7 days)
+    const sevenDaysAgo = startOfDay(subDays(new Date(), 6));
+    const recentSales = await prisma.sale.findMany({
+      where: {
+        organizationId: orgId,
+        createdAt: { gte: sevenDaysAgo }
+      }
+    });
+
+    const chartData = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+      const dayStart = startOfDay(date);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const daySales = recentSales.filter(s => s.createdAt >= dayStart && s.createdAt <= dayEnd);
+      const dayRevenue = daySales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+      const dayProfit = daySales.reduce((sum, sale) => sum + sale.profit, 0);
+
+      chartData.push({
+        name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        revenue: dayRevenue,
+        profit: dayProfit,
+        users: activeUsers
       });
     }
-
-    // Mocking revenue since we don't have an invoices/orders table yet
-    const revenue = 45231.89; 
-    const activeUsers = 1;
-
-    // We generate some chart data based on DB (mocked for revenue)
-    const chartData = [
-      { name: "Mon", revenue: 4000, users: activeUsers },
-      { name: "Tue", revenue: 3000, users: activeUsers },
-      { name: "Wed", revenue: 2000, users: activeUsers },
-      { name: "Thu", revenue: 2780, users: activeUsers },
-      { name: "Fri", revenue: 1890, users: activeUsers },
-      { name: "Sat", revenue: 2390, users: activeUsers },
-      { name: "Sun", revenue: 3490, users: activeUsers },
-    ];
 
     return {
       success: true,
       data: {
-        revenue,
+        revenue: totalRevenue,
+        profit: netProfit,
         totalProducts,
         lowStockCount,
         activeUsers,
@@ -65,6 +89,7 @@ export async function getDashboardStats() {
       }
     };
   } catch (error: any) {
+    console.error("Dashboard Stats Error:", error);
     return { success: false, error: error.message };
   }
 }

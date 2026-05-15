@@ -3,6 +3,7 @@
 import { SignIn } from "@clerk/nextjs";
 import { Activity } from "lucide-react";
 import { motion } from "framer-motion";
+import { login } from "@/actions/auth.actions";
 
 export default function LoginPage() {
   return (
@@ -25,10 +26,45 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground">Sign in to access your FlowPilot workspace.</p>
         </div>
 
-        {/* Clerk SignIn Component with Custom Theming passed from layout */}
-        <div className="w-full flex justify-center">
+        {/* Clerk SignIn Component */}
+        <div className="w-full flex justify-center mb-6">
           <SignIn path="/login" routing="path" signUpUrl="/register" fallbackRedirectUrl="/dashboard" />
         </div>
+
+        <div className="w-full flex items-center gap-4 mb-6">
+          <div className="h-px bg-white/10 flex-1"></div>
+          <span className="text-xs text-muted-foreground font-mono">OR USE FLOWAUTH</span>
+          <div className="h-px bg-white/10 flex-1"></div>
+        </div>
+
+        <form action={login} className="w-full space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Email Address</label>
+            <input 
+              name="email"
+              type="email" 
+              placeholder="name@company.com"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-muted-foreground focus:border-primary/50 outline-none transition-all"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Password</label>
+            <input 
+              name="password"
+              type="password" 
+              placeholder="••••••••"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-muted-foreground focus:border-primary/50 outline-none transition-all"
+              required
+            />
+          </div>
+          <button 
+            type="submit"
+            className="w-full py-3 rounded-xl bg-primary/20 border border-primary/50 text-primary font-bold hover:bg-primary/30 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(0,255,255,0.15)]"
+          >
+            SIGN IN TO FLOWPILOT
+          </button>
+        </form>
       </motion.div>
     </div>
   );
